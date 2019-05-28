@@ -1,10 +1,9 @@
 var path = require('path');
 var cp = require('child_process');
-var fs = require('fs');
+var fs = require('fs-extra');
 
 var chai = require('chai');
 var tmp = require('tmp');
-var wrench = require('wrench');
 
 var fixtures = path.join(__dirname, 'integration', 'fixtures');
 var tmpDir = 'tmp';
@@ -22,7 +21,7 @@ function spawnGrunt(dir, done) {
   } else {
     var node = process.argv[0];
     var grunt = process.argv[1]; // assumes grunt drives these tests
-    var child = cp.spawn(node, [grunt, '--verbose', '--stack'], {cwd: dir});
+    var child = cp.spawn(node, [grunt, '--verbose', '--stack'], { cwd: dir });
     done(null, child);
   }
 }
@@ -39,12 +38,12 @@ function cloneFixture(name, done) {
     fs.mkdirSync(tmpDir);
   }
 
-  tmp.dir({dir: tmpDir}, function(error, dir) {
+  tmp.dir({ dir: tmpDir }, function (error, dir) {
     if (error) {
       return done(error);
     }
     var scratch = path.join(dir, name);
-    wrench.copyDirRecursive(fixture, scratch, function(error) {
+    fs.copy(fixture, scratch, function (error) {
       done(error, scratch);
     });
   });
@@ -57,23 +56,23 @@ function cloneFixture(name, done) {
  * @param {function(Error, scratch)} done Called with an error if the task
  *     fails.  Called with the cloned fixture directory if the task succeeds.
  */
-exports.buildFixture = function(name, done) {
-  cloneFixture(name, function(error, scratch) {
+exports.buildFixture = function (name, done) {
+  cloneFixture(name, function (error, scratch) {
     if (error) {
       return done(error);
     }
-    spawnGrunt(scratch, function(error, child) {
+    spawnGrunt(scratch, function (error, child) {
       if (error) {
         return done(error);
       }
       var messages = [];
-      child.stderr.on('data', function(chunk) {
+      child.stderr.on('data', function (chunk) {
         messages.push(chunk.toString());
       });
-      child.stdout.on('data', function(chunk) {
+      child.stdout.on('data', function (chunk) {
         messages.push(chunk.toString());
       });
-      child.on('close', function(code) {
+      child.on('close', function (code) {
         if (code !== 0) {
           done(new Error('Task failed: ' + messages.join('')));
         } else {
@@ -90,12 +89,12 @@ exports.buildFixture = function(name, done) {
  * @param {string} scratch Path to scratch directory.
  * @param {function} done Callback.
  */
-exports.afterFixture = function(scratch, done) {
+exports.afterFixture = function (scratch, done) {
   var error;
   if (scratch) {
     try {
-      wrench.rmdirSyncRecursive(scratch, false);
-      wrench.rmdirSyncRecursive(tmpDir, false);
+      fs.removeSync(scratch);
+      fs.removeSync(tmpDir);
     } catch (err) {
       error = err;
     }

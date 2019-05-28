@@ -1,12 +1,7 @@
-var assert = require('assert');
-var path = require('path');
-var fs = require('fs');
-
-
 /**
  * @param {Object} grunt Grunt.
  */
-module.exports = function(grunt) {
+module.exports = function (grunt) {
 
   var gruntfileSrc = 'gruntfile.js';
   var tasksSrc = ['tasks/**/*.js', 'lib/**/*.js'];
@@ -16,7 +11,7 @@ module.exports = function(grunt) {
 
   grunt.initConfig({
 
-    cafemocha: {
+    mochaTest: {
       options: {
         reporter: 'spec'
       },
@@ -46,15 +41,15 @@ module.exports = function(grunt) {
     watch: {
       tasks: {
         files: tasksSrc,
-        tasks: ['cafemocha']
+        tasks: ['mochaTest']
       },
       tests: {
         files: testSrc,
-        tasks: ['newer:cafemocha']
+        tasks: ['newer:mochaTest']
       },
       fixturesAll: {
         files: fixturesAll,
-        tasks: ['cafemocha']
+        tasks: ['mochaTest']
       },
       allJs: {
         files: [gruntfileSrc, tasksSrc, testSrc, fixturesJs],
@@ -67,9 +62,9 @@ module.exports = function(grunt) {
   grunt.loadTasks('tasks');
   grunt.loadNpmTasks('grunt-contrib-jshint');
   grunt.loadNpmTasks('grunt-contrib-watch');
-  grunt.loadNpmTasks('grunt-cafe-mocha');
+  grunt.loadNpmTasks('grunt-mocha-test');
 
-  grunt.registerTask('test', ['newer:jshint', 'cafemocha']);
+  grunt.registerTask('test', ['newer:jshint', 'mochaTest']);
 
   grunt.registerTask('default', 'test');
 
